@@ -15,10 +15,15 @@ export class FirebaseService {
 
     // const ref =  this.db.collection('todoLists').add({});
     const id = this.db.createId();
-    const ref = this.db.collection('todoLists').doc(id);
-   /* this.db.collection('todoLists').doc(id).collection('todo').add({
-      name: 'todo1'
-    });*/
-    console.log(ref);
+    // const ref = this.db.collection('todoLists').doc(id);
+    this.db.collection('todoLists').doc(id).collection('todo').add({
+      task: 'Почистить зубы',
+      complete: false
+    });
+    // console.log(ref);
+  }
+
+  getList() {
+    return this.db.collection('todoLists').doc('5Gnf18yMhnjYZbw74PQo').collection('todo').snapshotChanges();
   }
 }

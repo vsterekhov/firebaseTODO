@@ -12,6 +12,6 @@ export class AppComponent implements OnInit {
   constructor(public firebaseService: FirebaseService) {}
 
   ngOnInit() {
-    this.firebaseService.addTODO();
+   // this.firebaseService.addTODO();
   }
 }
