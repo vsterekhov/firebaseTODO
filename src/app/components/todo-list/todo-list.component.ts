@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AddTaskComponent } from '../add-task/add-task.component';
@@ -14,23 +14,37 @@ export class TodoListComponent implements OnInit {
   task: string;
   private listKey: string;
 
-  constructor(private firebaseService: FirebaseService, private route: ActivatedRoute, public dialog: MatDialog) { }
+  constructor(private firebaseService: FirebaseService,
+              private route: ActivatedRoute,
+              private router: Router,
+              public dialog: MatDialog) { }
 
   ngOnInit() {
-    if (this.route.snapshot.paramMap.has('listKey')) {
+   /* if (this.route.snapshot.paramMap.has('listKey')) {
       this.firebaseService.getList(this.route.snapshot.params.listKey)
       .subscribe(result => {
         this.todoList = result;
       });
     } else {
       this.listKey = this.firebaseService.generateListKey();
-    }
+    }*/
     // this.firebaseService.addTODO();
    /*  this.firebaseService.getList()
     .subscribe(result => {
       console.log(result);
       console.log(result[0].payload.doc.data());
     }); */
+    this.route.params.subscribe(
+      (params) => {
+        if (params.listKey !== undefined) {
+          this.firebaseService.getList(params.listKey)
+          .subscribe(result => {
+            this.todoList = result;
+          });
+        } else {
+          this.listKey = this.firebaseService.generateListKey();
+        }
+    });
   }
 
   openDialog(): void {
@@ -42,6 +56,9 @@ export class TodoListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
         this.firebaseService.addTask(this.listKey, result);
+        if (!this.route.snapshot.paramMap.has('listKey')) {
+          this.router.navigate([`${this.listKey}`]);
+        }
       }
     });
   }
