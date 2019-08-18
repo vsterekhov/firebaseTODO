@@ -1,0 +1,16 @@
+.complete {
+    text-decoration: line-through;
+    color: #D3D3D3;	
+}
+.task {
+    width: 100%;
+    padding-left: 16px;
+}
+.delete-button {
+    margin-right: -16px;
+}
+.add-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20Px;
+}

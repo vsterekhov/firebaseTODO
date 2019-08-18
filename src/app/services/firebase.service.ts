@@ -8,22 +8,31 @@ export class FirebaseService {
 
   constructor(public db: AngularFirestore) { }
 
-  addTODO() {
+  generateListKey(): string {
+    return this.db.createId();
+  }
+
+  addTask(listKey: string, task: string) {
    /*  this.db.collection('userLists').add({
       name: 'todo'
     }); */
 
     // const ref =  this.db.collection('todoLists').add({});
-    const id = this.db.createId();
+    // const id = this.db.createId();
     // const ref = this.db.collection('todoLists').doc(id);
-    this.db.collection('todoLists').doc(id).collection('todo').add({
+   /* this.db.collection('todoLists').doc(id).collection('todo').add({
       task: 'Почистить зубы',
       complete: false
-    });
+    });*/
     // console.log(ref);
+
+    this.db.collection('todoLists').doc(listKey).collection('todo').add({
+      task,
+      complete: false
+    });
   }
 
-  getList() {
-    return this.db.collection('todoLists').doc('5Gnf18yMhnjYZbw74PQo').collection('todo').snapshotChanges();
+  getList(listKey: string) {
+    return this.db.collection('todoLists').doc(listKey).collection('todo').snapshotChanges();
   }
 }

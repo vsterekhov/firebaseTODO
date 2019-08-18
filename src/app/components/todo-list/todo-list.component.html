@@ -1,3 +1,22 @@
-<p>
-  todo-list works!
-</p>
+  <mat-list>
+    <mat-list-item *ngFor="let todo of todoList">
+      <div>
+        <mat-checkbox *ngIf="todo.payload.doc.data()['complete']" checked="true" color="primary"></mat-checkbox>
+        <mat-checkbox *ngIf="!todo.payload.doc.data()['complete']" color="primary"></mat-checkbox>
+      </div>
+      <div class="task">
+        <p [class.complete]="todo.payload.doc.data()['complete']"> {{todo.payload.doc.data()['task']}} </p>
+      </div>
+      <button mat-icon-button aria-label="Delete task" class="delete-button">
+        <mat-icon color="primary">delete_forever</mat-icon>
+      </button>
+      <mat-divider></mat-divider>
+    </mat-list-item>
+  </mat-list>
+  
+  <!-- Добавить задачу -->
+  <div class="add-btn">
+    <button mat-fab color="primary" (click)="openDialog()">
+      <mat-icon mat-list-icon>add</mat-icon>
+    </button>
+  </div>
