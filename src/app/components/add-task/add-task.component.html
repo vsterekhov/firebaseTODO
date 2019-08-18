@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>Add new task</h2>
+
+<mat-dialog-content>
+    <mat-form-field class="example-full-width">
+        <input matInput [(ngModel)]="data.task">      
+      </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary"[mat-dialog-close]="data.task">Save</button>
+</mat-dialog-actions>
