@@ -1,13 +1,13 @@
   <mat-list>
     <mat-list-item *ngFor="let todo of todoList">
       <div>
-        <mat-checkbox *ngIf="todo.payload.doc.data()['complete']" checked="true" color="primary"></mat-checkbox>
-        <mat-checkbox *ngIf="!todo.payload.doc.data()['complete']" color="primary"></mat-checkbox>
+        <mat-checkbox *ngIf="todo.payload.doc.data()['complete']" checked="true" (change)="onChange($event, i, item)" color="primary"></mat-checkbox>
+        <mat-checkbox *ngIf="!todo.payload.doc.data()['complete']" (change)="onChange($event, i, item)" color="primary"></mat-checkbox>
       </div>
       <div class="task">
         <p [class.complete]="todo.payload.doc.data()['complete']"> {{todo.payload.doc.data()['task']}} </p>
       </div>
-      <button mat-icon-button aria-label="Delete task" class="delete-button">
+      <button mat-icon-button aria-label="Delete task" class="delete-button" (click)="deleteTask(todo)">
         <mat-icon color="primary">delete_forever</mat-icon>
       </button>
       <mat-divider></mat-divider>

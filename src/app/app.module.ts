@@ -25,6 +25,7 @@ import { AddTaskComponent } from './components/add-task/add-task.component';
   imports: [
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
+    AngularFirestoreModule.enablePersistence(),
     BrowserModule,
     AppRoutingModule,
     FormsModule,

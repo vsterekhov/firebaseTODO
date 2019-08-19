@@ -5,14 +5,20 @@ import { AngularFirestore } from '@angular/fire/firestore';
   providedIn: 'root'
 })
 export class FirebaseService {
+  // tslint:disable-next-line:variable-name
+  listKey: string;
 
   constructor(public db: AngularFirestore) { }
 
-  generateListKey(): string {
-    return this.db.createId();
+  generateListKey() {
+    this.listKey = this.db.createId();
   }
 
-  addTask(listKey: string, task: string) {
+  getList() {
+    return this.db.collection('todoLists').doc(this.listKey).collection('todo').snapshotChanges();
+  }
+
+  addTask(task: string) {
    /*  this.db.collection('userLists').add({
       name: 'todo'
     }); */
@@ -26,13 +32,17 @@ export class FirebaseService {
     });*/
     // console.log(ref);
 
-    this.db.collection('todoLists').doc(listKey).collection('todo').add({
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
       task,
       complete: false
     });
   }
 
-  getList(listKey: string) {
-    return this.db.collection('todoLists').doc(listKey).collection('todo').snapshotChanges();
+  editTask(taskKey: string) {
+
+  }
+
+  deleteTask(taskKey: string) {
+
   }
 }
