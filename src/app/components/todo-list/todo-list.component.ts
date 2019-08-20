@@ -36,7 +36,7 @@ export class TodoListComponent implements OnInit {
   openDialog(): void {
     const dialogRef = this.dialog.open(AddTaskComponent, {
         width: '500px',
-        data: {task: this.task}
+        data: {task: undefined}
       });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -49,11 +49,25 @@ export class TodoListComponent implements OnInit {
     });
   }
 
-  deleteTask(todo: any) {
-    this.firebaseService.deleteTask(todo.payload.doc.id);
+  editTask(task: any) {
+    const dialogRef = this.dialog.open(AddTaskComponent, {
+      width: '500px',
+      data: { task: task.payload.doc.data().task }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.firebaseService.changeTask(task.payload.doc.id, result);
+        this.firebaseService.changeTaskStatus(task.payload.doc.id, false);
+      }
+    });
   }
 
-  onChange(event) {
-    console.log(event);
+  deleteTask(task: any) {
+    this.firebaseService.deleteTask(task.payload.doc.id);
+  }
+
+  onChange(event: any, task: any) {
+    this.firebaseService.changeTaskStatus(task.payload.doc.id, event.checked);
   }
 }

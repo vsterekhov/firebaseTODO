@@ -38,11 +38,19 @@ export class FirebaseService {
     });
   }
 
-  editTask(taskKey: string) {
+  changeTask(taskKey: string, task: string) {
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).update({
+      task
+    });
+  }
 
+  changeTaskStatus(taskKey: string, complete: boolean) {
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).update({
+      complete
+    });
   }
 
   deleteTask(taskKey: string) {
-
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).delete();
   }
 }
