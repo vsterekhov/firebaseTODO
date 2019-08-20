@@ -2,6 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 export interface DialogData {
+  newTask: boolean;
   task: string;
 }
 
@@ -11,20 +12,14 @@ export interface DialogData {
   styleUrls: ['./add-task.component.scss']
 })
 export class AddTaskComponent implements OnInit {
-
   constructor(
     public dialogRef: MatDialogRef<AddTaskComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) { }
+    @Inject(MAT_DIALOG_DATA) public data: DialogData) { console.log(data.newTask); }
 
   ngOnInit() {
   }
 
   onCancel(): void {
-    this.dialogRef.close();
-  }
-
-  onSave(data): void {
-   // this.myData.addTodo(this.lastId+1, data);
     this.dialogRef.close();
   }
 

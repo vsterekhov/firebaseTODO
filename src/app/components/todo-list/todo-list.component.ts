@@ -11,7 +11,6 @@ import { AddTaskComponent } from '../add-task/add-task.component';
 })
 export class TodoListComponent implements OnInit {
   todoList: Array<any>;
-  task: string;
 
   constructor(private firebaseService: FirebaseService,
               private route: ActivatedRoute,
@@ -34,7 +33,7 @@ export class TodoListComponent implements OnInit {
   }
 
   openDialog(): void {
-    const dialogRef = this.dialog.open(AddTaskComponent, {
+   /* const dialogRef = this.dialog.open(AddTaskComponent, {
         width: '500px',
         data: {task: undefined}
       });
@@ -46,11 +45,15 @@ export class TodoListComponent implements OnInit {
           this.router.navigate([`${this.firebaseService.listKey}`]);
         }
       }
-    });
+    });*/
+  }
+
+  addTask() {
+    this.firebaseService.addTask();
   }
 
   editTask(task: any) {
-    const dialogRef = this.dialog.open(AddTaskComponent, {
+    /*const dialogRef = this.dialog.open(AddTaskComponent, {
       width: '500px',
       data: { task: task.payload.doc.data().task }
     });
@@ -60,7 +63,8 @@ export class TodoListComponent implements OnInit {
         this.firebaseService.changeTask(task.payload.doc.id, result);
         this.firebaseService.changeTaskStatus(task.payload.doc.id, false);
       }
-    });
+    });*/
+    this.firebaseService.changeTask(task.payload.doc.id, task.payload.doc.data().task);
   }
 
   deleteTask(task: any) {
