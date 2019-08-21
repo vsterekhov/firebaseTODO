@@ -21,14 +21,11 @@ export class TodoListComponent implements OnInit {
     this.route.params.subscribe(
       (params) => {
         if (params.listKey !== undefined) {
-
-          if (params.listKey.startsWith('#')) {
-            this.firebaseService.listKey = params.listKey.slice(1);
-            this.firebaseService.getList()
-            .subscribe(result => {
-              this.todoList = result; console.log(this.todoList[0].payload.doc.id);
-            });
-          }
+          this.firebaseService.listKey = params.listKey;
+          this.firebaseService.getList()
+          .subscribe(result => {
+            this.todoList = result;
+          });
         } else {
           this.firebaseService.generateListKey();
         }

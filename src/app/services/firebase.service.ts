@@ -51,7 +51,7 @@ export class FirebaseService {
         });
 
         if (!this.route.snapshot.paramMap.has('listKey')) {
-          this.router.navigate([`#${this.listKey}`]);
+          this.router.navigate([`${this.listKey}`]);
         }
       }
     });
