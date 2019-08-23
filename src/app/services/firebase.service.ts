@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
-import { AddTaskComponent } from '../components/add-task/add-task.component';
+import { AddTaskComponent } from '../components/dialog/add-task/add-task.component';
+import { ConfirmDeleteComponent } from '../components/dialog/confirm-delete/confirm-delete.component';
+import { ChooseStrategyComponent } from '../components/dialog/choose-strategy/choose-strategy.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as firebase from 'firebase';
 
 @Injectable({
   providedIn: 'root'
@@ -10,15 +13,30 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class FirebaseService {
   listKey: string;
 
-  constructor(public db: AngularFirestore, private router: Router, private route: ActivatedRoute, public dialog: MatDialog) { }
+  constructor(public db: AngularFirestore,
+              private router: Router,
+              private route: ActivatedRoute,
+              public dialog: MatDialog) { }
 
-  private openDialog(newTask: boolean, task?: string) {
+  private openAddTaskDialog(newTask: boolean, task?: string) {
     return this.dialog.open(AddTaskComponent, {
       width: '500px',
       data: {
           newTask,
           task
       }
+    });
+  }
+
+  private openConfirmDeleteDialog() {
+    return this.dialog.open(ConfirmDeleteComponent, {
+      width: '200px'
+    });
+  }
+
+  private openChooseStrategyDialog() {
+    return this.dialog.open(ChooseStrategyComponent, {
+      width: '400px'
     });
   }
 
@@ -31,23 +49,12 @@ export class FirebaseService {
   }
 
   addTask() {
-   /*  this.db.collection('userLists').add({
-      name: 'todo'
-    }); */
-
-    // const ref =  this.db.collection('todoLists').add({});
-    // const id = this.db.createId();
-    // const ref = this.db.collection('todoLists').doc(id);
-   /* this.db.collection('todoLists').doc(id).collection('todo').add({
-      task: 'Почистить зубы',
-      complete: false
-    });*/
-    // console.log(ref);
-    this.openDialog(true).afterClosed().subscribe(result => {
+    this.openAddTaskDialog(true).afterClosed().subscribe(result => {
       if (result !== undefined) {
         this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
           task: result,
-          complete: false
+          complete: false,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         if (!this.route.snapshot.paramMap.has('listKey')) {
@@ -55,21 +62,52 @@ export class FirebaseService {
         }
       }
     });
-    /*this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
-      task,
-      complete: false
-    });*/
   }
 
-  changeTask(taskKey: string, task: string) {
-    /*this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).update({
-      task
-    });*/
+  changeTask(taskKey: string, task: string, timestamp: any) {
+    const lastModifiedTime = timestamp;
+    const docRef = this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey);
 
-    this.openDialog(false, task).afterClosed().subscribe(result => {
+    this.openAddTaskDialog(false, task).afterClosed().subscribe(result => {
       if (result !== undefined) {
-        this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).update({
-          task: result
+        const newTask = result;
+        docRef.get().subscribe(doc => {
+          if (doc.exists) {
+            if (!lastModifiedTime.isEqual(doc.data().timestamp)) {
+              this.openChooseStrategyDialog().afterClosed().subscribe(result => {
+                switch (result) {
+                  case 'new': {
+                      this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
+                        task: newTask,
+                        complete: false,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                      });
+                      break;
+                  }
+                  case 'overwrite': {
+                    docRef.update({
+                      task: newTask,
+                      complete: false,
+                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    break;
+                  }
+                }
+              });
+            } else {
+              docRef.update({
+                task: newTask,
+                complete: false,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            }
+          } else {
+            this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
+              task: result,
+              complete: false,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
         });
       }
     });
@@ -82,6 +120,10 @@ export class FirebaseService {
   }
 
   deleteTask(taskKey: string) {
-    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).delete();
+    this.openConfirmDeleteDialog().afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).delete();
+      }
+    });
   }
 }

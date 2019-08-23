@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AddTaskComponent } from '../add-task/add-task.component';
 
 @Component({
   selector: 'app-todo-list',
@@ -14,7 +13,6 @@ export class TodoListComponent implements OnInit {
 
   constructor(private firebaseService: FirebaseService,
               private route: ActivatedRoute,
-              private router: Router,
               public dialog: MatDialog) { }
 
   ngOnInit() {
@@ -32,39 +30,12 @@ export class TodoListComponent implements OnInit {
     });
   }
 
-  openDialog(): void {
-   /* const dialogRef = this.dialog.open(AddTaskComponent, {
-        width: '500px',
-        data: {task: undefined}
-      });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        this.firebaseService.addTask(result);
-        if (!this.route.snapshot.paramMap.has('listKey')) {
-          this.router.navigate([`${this.firebaseService.listKey}`]);
-        }
-      }
-    });*/
-  }
-
   addTask() {
     this.firebaseService.addTask();
   }
 
   editTask(task: any) {
-    /*const dialogRef = this.dialog.open(AddTaskComponent, {
-      width: '500px',
-      data: { task: task.payload.doc.data().task }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        this.firebaseService.changeTask(task.payload.doc.id, result);
-        this.firebaseService.changeTaskStatus(task.payload.doc.id, false);
-      }
-    });*/
-    this.firebaseService.changeTask(task.payload.doc.id, task.payload.doc.data().task);
+    this.firebaseService.changeTask(task.payload.doc.id, task.payload.doc.data().task, task.payload.doc.data().timestamp);
   }
 
   deleteTask(task: any) {

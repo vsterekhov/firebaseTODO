@@ -12,16 +12,20 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule, MatButtonModule, MatIconModule, MatListModule, MatDialogModule, MatInputModule } from '@angular/material';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HeaderComponent } from './components/header/header.component';
-import { AddTaskComponent } from './components/add-task/add-task.component';
+import { AddTaskComponent } from './components/dialog/add-task/add-task.component';
+import { ChooseStrategyComponent } from './components/dialog/choose-strategy/choose-strategy.component';
+import { ConfirmDeleteComponent } from './components/dialog/confirm-delete/confirm-delete.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TodoListComponent,
     HeaderComponent,
-    AddTaskComponent
+    AddTaskComponent,
+    ChooseStrategyComponent,
+    ConfirmDeleteComponent
   ],
-  entryComponents: [AddTaskComponent],
+  entryComponents: [AddTaskComponent, ChooseStrategyComponent, ConfirmDeleteComponent],
   imports: [
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
