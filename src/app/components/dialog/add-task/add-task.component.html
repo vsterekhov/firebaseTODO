@@ -1,13 +1,13 @@
-<h2 mat-dialog-title *ngIf="data.newTask">Add new task</h2>
-<h2 mat-dialog-title *ngIf="!data.newTask">Edit task</h2>
+<h2 mat-dialog-title *ngIf="!isEdit">Add new task</h2>
+<h2 mat-dialog-title *ngIf="isEdit">Edit task</h2>
 
 <mat-dialog-content>
-    <mat-form-field class="example-full-width">
-        <input matInput [(ngModel)]="data.task" autocomplete="off">      
+    <mat-form-field class="dialog-content">
+        <input matInput [(ngModel)]="data.text" autocomplete="off">      
       </mat-form-field>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-raised-button color="primary"[mat-dialog-close]="data.task">Save</button>
+  <button mat-raised-button color="primary"[mat-dialog-close]="data.text">Save</button>
 </mat-dialog-actions>

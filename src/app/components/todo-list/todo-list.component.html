@@ -1,13 +1,13 @@
   <mat-list>
     <mat-list-item *ngFor="let todo of todoList">
       <div>
-        <mat-checkbox  [checked]="todo.payload.doc.data()['complete']" 
-                        (change)="changeTaskStatus($event, todo)" 
+        <mat-checkbox  [checked]="todo.complete" 
+                        (change)="changeTaskStatus(todo, $event.checked)" 
                         color="primary">
         </mat-checkbox>
       </div>
       <div class="task">
-        <p [class.complete]="todo.payload.doc.data()['complete']"> {{todo.payload.doc.data()['task']}} </p>
+        <p [class.complete]="todo.complete"> {{todo.text}} </p>
       </div>
       <button mat-icon-button aria-label="Edit task" class="edit-button" (click)="editTask(todo)">
         <mat-icon color="primary">edit</mat-icon>
@@ -21,7 +21,7 @@
   
   <!-- Добавить задачу -->
   <div class="add-btn">
-    <button mat-fab color="primary" (click)="addTask()">
+    <button mat-fab color="primary" (click)="createTask()">
       <mat-icon mat-list-icon>add</mat-icon>
     </button>
   </div>

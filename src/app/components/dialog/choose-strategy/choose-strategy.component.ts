@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
-export interface DialogData {
-  action: string;
-}
+/** Определяет действия при обнаружении параллельных изменений во время редактирования задачи */
+export const enum Strategy {New, Overwrite}
 
 @Component({
   selector: 'app-choose-strategy',
@@ -11,6 +10,11 @@ export interface DialogData {
   styleUrls: ['./choose-strategy.component.scss']
 })
 export class ChooseStrategyComponent {
+  /** Определяет действие: создать новую задачу */
+  new: Strategy = Strategy.New;
+
+  /** Определяет действие: перезаписать текущую задачу */
+  overwrite: Strategy = Strategy.Overwrite;
 
   constructor(public dialogRef: MatDialogRef<ChooseStrategyComponent>) { }
 
@@ -18,7 +22,7 @@ export class ChooseStrategyComponent {
     this.dialogRef.close();
   }
 
-  onSave(action: string): void {
-    this.dialogRef.close(action);
+  onSave(strategy: Strategy): void {
+    this.dialogRef.close(strategy);
   }
 }

@@ -1,74 +1,77 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
+import {Observable} from 'rxjs';
+import { map } from 'rxjs/operators';
+import { AngularFirestore, AngularFirestoreCollection  } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { AddTaskComponent } from '../components/dialog/add-task/add-task.component';
 import { ConfirmDeleteComponent } from '../components/dialog/confirm-delete/confirm-delete.component';
-import { ChooseStrategyComponent } from '../components/dialog/choose-strategy/choose-strategy.component';
+import { ChooseStrategyComponent, Strategy } from '../components/dialog/choose-strategy/choose-strategy.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as firebase from 'firebase';
+import { ToDo } from '../model/todo.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  listKey: string;
+  /** Ключ, идентифицирующий список TODO в firestore */
+  private listKey: string;
 
-  constructor(public db: AngularFirestore,
+  /** Ссылка на список TODO */
+  private listRef: AngularFirestoreCollection;
+
+  /**
+   *
+   * @param db - объект для работы с сервером firestore
+   * @param router - объект для работы с маршрутизацией
+   * @param route - объект для работы с маршрутами
+   * @param dialog - объект для работы с диалоговыми окнами
+   */
+  constructor(private db: AngularFirestore,
               private router: Router,
               private route: ActivatedRoute,
-              public dialog: MatDialog) { }
+              private dialog: MatDialog) { }
 
-  private addNewTaskToFireStore(task: string) {
-    this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
-      task,
-      complete: false,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  /**
+   * Создаёт ссылку на список по полученному идентификатору
+   * @param listKey - идентификатор списка
+   */
+  setInitial(listKey: string) {
+    this.listKey = listKey;
+    this.listRef = this.db.collection('todoLists').doc(this.listKey).collection('todo');
   }
 
-  private updateTaskOnFireStore(task: string, taskKey: string) {
-    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
-      task,
-      complete: false,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  }
-
-  private openAddTaskDialog(newTask: boolean, task?: string) {
-    return this.dialog.open(AddTaskComponent, {
-      width: '500px',
-      data: {
-          newTask,
-          task
-      }
-    });
-  }
-
-  private openConfirmDeleteDialog() {
-    return this.dialog.open(ConfirmDeleteComponent, {
-      width: '200px'
-    });
-  }
-
-  private openChooseStrategyDialog() {
-    return this.dialog.open(ChooseStrategyComponent, {
-      width: '400px'
-    });
-  }
-
+  /**
+   * Генерирует уникальный ключ для идентификации списка TODO
+   */
   generateListKey() {
     this.listKey = this.db.createId();
   }
 
-  getList() {
-    return this.db.collection('todoLists').doc(this.listKey).collection('todo').snapshotChanges();
+  /**
+   * Возвращает observable, который в реальном времени эмитит данные при каждом изменени списка TODO на сервере
+   */
+  getList(): Observable<ToDo[]> {
+    return this.listRef.snapshotChanges()
+    .pipe(
+      map(list => list.map(item => {
+        const data = item.payload.doc.data() as ToDo;
+        const id = item.payload.doc.id;
+        return { id, ...data };
+      }))
+    );
   }
 
-  addTask() {
-    this.openAddTaskDialog(true).afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        this.addNewTaskToFireStore(result);
+  /**
+   * Создает новую задачу в списке
+   */
+  createTask() {
+    this.openAddTaskDialog().afterClosed().subscribe(result => {
+      if (result) {
+        this.addTask(result);
 
+        // Если в маршруте не было идентификатора списка значит был создан новый список
+        // и нужно сделать перенаправление на маршрут с идентификатором нового списка
         if (!this.route.snapshot.paramMap.has('listKey')) {
           this.router.navigate([`${this.listKey}`]);
         }
@@ -76,64 +79,129 @@ export class FirebaseService {
     });
   }
 
-  editTask(taskKey: string, task: string, timestamp: any) {
-    const lastModifiedTime = timestamp;
-    const docRef = this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey);
+  /**
+   * Редактирует выбранную задачу
+   * @param id - идентификатор задачи
+   * @param text - текст задачи
+   * @param timestamp - дата последнего изменения задачи
+   */
+  editTask(id: string, text: string, timestamp: Date) {
+    // Запоминаем последнее время изменения задачи перед началом редактирования
+    const lastModifiedTime: Date = timestamp;
 
-    this.openAddTaskDialog(false, task).afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        const newTask = result;
-        docRef.get().subscribe(doc => {
+    this.openAddTaskDialog(text).afterClosed().subscribe(result => {
+      if (result) {
+        // Запоминаем новый текст задачи
+        const newText = result;
+
+        this.listRef.doc(id).get().subscribe(doc => {
+          // Проверяем не была ли удалена задача кем-то другим во время редактирования
           if (doc.exists) {
-            if (!lastModifiedTime.isEqual(doc.data().timestamp)) {
-              this.openChooseStrategyDialog().afterClosed().subscribe(result => {
-                switch (result) {
-                  case 'new':
-                      this.addNewTaskToFireStore(newTask);
+
+            // Проверям вносил ли кто-либо другой изменения пока было открыто диалоговое окно редактирования
+            if ( lastModifiedTime.getTime() !== doc.data().timestamp.getTime() ) {
+
+              // Открываем диалоговое окно выбора дальнейших действий
+              this.openChooseStrategyDialog().afterClosed().subscribe(strategy => {
+                switch (strategy) {
+                  case Strategy.New:
+                      this.addTask(newText);
                       break;
-                  case 'overwrite': /*{
-                    docRef.update({
-                      task: newTask,
-                      complete: false,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });*/
-                    this.updateTaskOnFireStore(newTask, taskKey);
+                  case Strategy.Overwrite:
+                    this.setTask(newText, id);
                     break;
-                  //}
                 }
               });
-            } else {
-              /*docRef.update({
-                task: newTask,
-                complete: false,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-              });*/
-              this.updateTaskOnFireStore(newTask, taskKey);
+
+            } else { // Если никто не вносил изменения пока было открыто диалоговое окно редактирования задачи, то просто перезаписываем её
+              this.setTask(newText, id);
             }
-          } else {
-           /* this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
-              task: result,
-              complete: false,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });*/
-            this.updateTaskOnFireStore(result, taskKey);
+
+          } else { // Если задача была удалена, то пересоздаём её с введённым текстом
+            this.setTask(newText, id);
           }
         });
+
       }
     });
   }
 
-  changeTaskStatus(taskKey: string, complete: boolean) {
-    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).update({
+  /**
+   * Меняет статус задачи
+   * @param id - идентификатор задачи
+   * @param complete - статус задачи
+   */
+  changeTaskStatus(id: string, complete: boolean) {
+    this.listRef.doc(id).update({
       complete
     });
   }
 
-  deleteTask(taskKey: string) {
+  /**
+   * Удаляет выбранную задачу из списка
+   * @param id - идентификатор задачи
+   */
+  deleteTask(id: string) {
     this.openConfirmDeleteDialog().afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).delete();
+      if (result) {
+        this.listRef.doc(id).delete();
       }
+    });
+  }
+
+  /**
+   * Добавляет новую задачу в список TODO, хранящийся в firestore
+   * @param text - текст задачи
+   */
+  private addTask(text: string) {
+    this.listRef.add({
+      text,
+      complete: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  /**
+   * Перезаписывает выбранную задачу в списке TODO, хранящемся в firestore (при изменеии статус задачи выставляется в "не выполнено")
+   * @param text - текст задачи
+   * @param id - идентификатор задачи
+   */
+  private setTask(text: string, id: string) {
+    this.listRef.doc(id).set({
+      text,
+      complete: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  /**
+   * Открывает диалоговое окно создания/редактированя задачи.
+   * @param text - текст задачи(передаётся в случае редактирования)
+   */
+  private openAddTaskDialog(text?: string) {
+    return this.dialog.open(AddTaskComponent, {
+      width: '500px',
+      data: {
+          text
+      }
+    });
+  }
+
+  /**
+   * Открывает диалоговое окно подтверждения удаления выбранной задачи
+   */
+  private openConfirmDeleteDialog() {
+    return this.dialog.open(ConfirmDeleteComponent, {
+      width: '200px'
+    });
+  }
+
+  /**
+   * Открывает диалоговое окно выбора дальнейших действий после редактирования, при обнаружении изменений, внесённых другим пользователем.
+   */
+  private openChooseStrategyDialog() {
+    return this.dialog.open(ChooseStrategyComponent, {
+      width: '400px'
     });
   }
 }
