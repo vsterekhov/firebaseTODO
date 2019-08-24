@@ -2,7 +2,7 @@
     <mat-list-item *ngFor="let todo of todoList">
       <div>
         <mat-checkbox  [checked]="todo.payload.doc.data()['complete']" 
-                        (change)="onChange($event, todo)" 
+                        (change)="changeTaskStatus($event, todo)" 
                         color="primary">
         </mat-checkbox>
       </div>

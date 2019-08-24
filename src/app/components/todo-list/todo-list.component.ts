@@ -35,14 +35,14 @@ export class TodoListComponent implements OnInit {
   }
 
   editTask(task: any) {
-    this.firebaseService.changeTask(task.payload.doc.id, task.payload.doc.data().task, task.payload.doc.data().timestamp);
+    this.firebaseService.editTask(task.payload.doc.id, task.payload.doc.data().task, task.payload.doc.data().timestamp);
   }
 
   deleteTask(task: any) {
     this.firebaseService.deleteTask(task.payload.doc.id);
   }
 
-  onChange(event: any, task: any) {
+  changeTaskStatus(event: any, task: any) {
     this.firebaseService.changeTaskStatus(task.payload.doc.id, event.checked);
   }
 }

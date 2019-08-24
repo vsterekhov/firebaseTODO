@@ -18,6 +18,22 @@ export class FirebaseService {
               private route: ActivatedRoute,
               public dialog: MatDialog) { }
 
+  private addNewTaskToFireStore(task: string) {
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
+      task,
+      complete: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  private updateTaskOnFireStore(task: string, taskKey: string) {
+    this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
+      task,
+      complete: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
   private openAddTaskDialog(newTask: boolean, task?: string) {
     return this.dialog.open(AddTaskComponent, {
       width: '500px',
@@ -51,11 +67,7 @@ export class FirebaseService {
   addTask() {
     this.openAddTaskDialog(true).afterClosed().subscribe(result => {
       if (result !== undefined) {
-        this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
-          task: result,
-          complete: false,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        this.addNewTaskToFireStore(result);
 
         if (!this.route.snapshot.paramMap.has('listKey')) {
           this.router.navigate([`${this.listKey}`]);
@@ -64,7 +76,7 @@ export class FirebaseService {
     });
   }
 
-  changeTask(taskKey: string, task: string, timestamp: any) {
+  editTask(taskKey: string, task: string, timestamp: any) {
     const lastModifiedTime = timestamp;
     const docRef = this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey);
 
@@ -76,37 +88,35 @@ export class FirebaseService {
             if (!lastModifiedTime.isEqual(doc.data().timestamp)) {
               this.openChooseStrategyDialog().afterClosed().subscribe(result => {
                 switch (result) {
-                  case 'new': {
-                      this.db.collection('todoLists').doc(this.listKey).collection('todo').add({
-                        task: newTask,
-                        complete: false,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                      });
+                  case 'new':
+                      this.addNewTaskToFireStore(newTask);
                       break;
-                  }
-                  case 'overwrite': {
+                  case 'overwrite': /*{
                     docRef.update({
                       task: newTask,
                       complete: false,
                       timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    });*/
+                    this.updateTaskOnFireStore(newTask, taskKey);
                     break;
-                  }
+                  //}
                 }
               });
             } else {
-              docRef.update({
+              /*docRef.update({
                 task: newTask,
                 complete: false,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-              });
+              });*/
+              this.updateTaskOnFireStore(newTask, taskKey);
             }
           } else {
-            this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
+           /* this.db.collection('todoLists').doc(this.listKey).collection('todo').doc(taskKey).set({
               task: result,
               complete: false,
               timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            });*/
+            this.updateTaskOnFireStore(result, taskKey);
           }
         });
       }
