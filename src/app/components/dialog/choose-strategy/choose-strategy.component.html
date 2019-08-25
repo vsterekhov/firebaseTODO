@@ -1,6 +1,8 @@
 <h2 mat-dialog-title>The task was changed by another user. Choose further actions.</h2>
 <mat-dialog-actions align="center">
-  <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-button (click)="onSave(overwrite)">Overwrite</button>
-  <button mat-button (click)="onSave(new)">Create new task</button>
+  <div class="strategy">
+    <button mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave(overwrite)">Overwrite</button>
+    <button mat-raised-button color="primary" (click)="onSave(new)">Create new task</button>
+  </div>
 </mat-dialog-actions>

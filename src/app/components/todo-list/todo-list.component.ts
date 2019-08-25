@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FirebaseService } from '../../services/firebase.service';
 import { ToDo } from '../../model/todo.interface';
 
@@ -16,9 +16,13 @@ export class TodoListComponent implements OnInit {
    * Конструктор
    * @param firebaseService - объект службы, реализующей работу с сервером firestore
    * @param route - объект для работы с маршрутами
+   * @param router - объект для работы с маршрутизацией
    */
   constructor(private firebaseService: FirebaseService,
-              private route: ActivatedRoute) { }
+              private route: ActivatedRoute,
+              private router: Router) {
+                this.todoList = [];
+               }
 
   ngOnInit() {
     // Подписываемся на отслеживание изменений параметра(значение ключа списка), передаваемого в составе маршрута
@@ -31,7 +35,8 @@ export class TodoListComponent implements OnInit {
             this.todoList = result;
           });
         } else { // Если идентификатора списка нет, то нужно создать список. Для этого генерируем идентификатор.
-          this.firebaseService.generateListKey();
+          const newListKey: string = this.firebaseService.generateListKey();
+          this.router.navigate([`${newListKey}`]);
         }
     });
   }

@@ -1,3 +1,5 @@
+import { Timestamp } from '@firebase/firestore-types';
+
 /**
  * Модель данных элемента списка TODO
  */
@@ -12,5 +14,5 @@ export interface ToDo {
     complete: boolean;
 
     /** Время последнего изменения */
-    timestamp: Date;
+    timestamp: Timestamp;
 }

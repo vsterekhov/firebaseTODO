@@ -28,8 +28,13 @@
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.scss"
+              "src/scss/styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                  "src/scss"
+              ]
+            },
             "scripts": [],
             "es5BrowserSupport": true
           },

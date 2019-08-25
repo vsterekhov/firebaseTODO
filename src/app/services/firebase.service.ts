@@ -6,8 +6,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddTaskComponent } from '../components/dialog/add-task/add-task.component';
 import { ConfirmDeleteComponent } from '../components/dialog/confirm-delete/confirm-delete.component';
 import { ChooseStrategyComponent, Strategy } from '../components/dialog/choose-strategy/choose-strategy.component';
-import { ActivatedRoute, Router } from '@angular/router';
-import * as firebase from 'firebase';
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
+import { Timestamp } from '@firebase/firestore-types';
 import { ToDo } from '../model/todo.interface';
 
 @Injectable({
@@ -23,13 +24,9 @@ export class FirebaseService {
   /**
    *
    * @param db - объект для работы с сервером firestore
-   * @param router - объект для работы с маршрутизацией
-   * @param route - объект для работы с маршрутами
    * @param dialog - объект для работы с диалоговыми окнами
    */
   constructor(private db: AngularFirestore,
-              private router: Router,
-              private route: ActivatedRoute,
               private dialog: MatDialog) { }
 
   /**
@@ -44,8 +41,8 @@ export class FirebaseService {
   /**
    * Генерирует уникальный ключ для идентификации списка TODO
    */
-  generateListKey() {
-    this.listKey = this.db.createId();
+  generateListKey(): string {
+    return this.db.createId();
   }
 
   /**
@@ -69,12 +66,6 @@ export class FirebaseService {
     this.openAddTaskDialog().afterClosed().subscribe(result => {
       if (result) {
         this.addTask(result);
-
-        // Если в маршруте не было идентификатора списка значит был создан новый список
-        // и нужно сделать перенаправление на маршрут с идентификатором нового списка
-        if (!this.route.snapshot.paramMap.has('listKey')) {
-          this.router.navigate([`${this.listKey}`]);
-        }
       }
     });
   }
@@ -85,9 +76,9 @@ export class FirebaseService {
    * @param text - текст задачи
    * @param timestamp - дата последнего изменения задачи
    */
-  editTask(id: string, text: string, timestamp: Date) {
+  editTask(id: string, text: string, timestamp: Timestamp) {
     // Запоминаем последнее время изменения задачи перед началом редактирования
-    const lastModifiedTime: Date = timestamp;
+    const lastModifiedTime: Timestamp = timestamp;
 
     this.openAddTaskDialog(text).afterClosed().subscribe(result => {
       if (result) {
@@ -97,9 +88,8 @@ export class FirebaseService {
         this.listRef.doc(id).get().subscribe(doc => {
           // Проверяем не была ли удалена задача кем-то другим во время редактирования
           if (doc.exists) {
-
             // Проверям вносил ли кто-либо другой изменения пока было открыто диалоговое окно редактирования
-            if ( lastModifiedTime.getTime() !== doc.data().timestamp.getTime() ) {
+            if ( !lastModifiedTime.isEqual(doc.data().timestamp) ) {
 
               // Открываем диалоговое окно выбора дальнейших действий
               this.openChooseStrategyDialog().afterClosed().subscribe(strategy => {
@@ -201,7 +191,7 @@ export class FirebaseService {
    */
   private openChooseStrategyDialog() {
     return this.dialog.open(ChooseStrategyComponent, {
-      width: '400px'
+      width: '500px'
     });
   }
 }

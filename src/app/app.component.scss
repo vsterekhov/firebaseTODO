@@ -1,5 +1,22 @@
-.add-btn{
-    position: fixed;
-    right: 20px;
-    bottom: 20Px;
+:host {
+    display: flex;
+    height: inherit;
+    flex-direction: column;
+}
+.app {
+    display: flex;
+    height: inherit;
+    flex-direction: column;
+
+    &__header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
 }

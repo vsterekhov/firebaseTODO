@@ -1,3 +1,13 @@
+<div *ngIf="todoList.length > 0; then listIsNotEmpty else listIsEmpty" class="todo-list"></div>   
+<!-- Добавить задачу -->
+<div class="create-task-button">
+  <button mat-fab color="primary" (click)="createTask()">
+    <mat-icon mat-list-icon>add</mat-icon>
+  </button>
+</div>
+
+<!-- Шаблон для случая, когда список содержит элементы -->
+<ng-template #listIsNotEmpty>
   <mat-list>
     <mat-list-item *ngFor="let todo of todoList">
       <div>
@@ -9,19 +19,22 @@
       <div class="task">
         <p [class.complete]="todo.complete"> {{todo.text}} </p>
       </div>
-      <button mat-icon-button aria-label="Edit task" class="edit-button" (click)="editTask(todo)">
+      <button mat-icon-button aria-label="Edit task" class="edit-task-button" (click)="editTask(todo)">
         <mat-icon color="primary">edit</mat-icon>
       </button>
-      <button mat-icon-button aria-label="Delete task" class="delete-button" (click)="deleteTask(todo)">
+      <button mat-icon-button aria-label="Delete task" class="delete-task-button" (click)="deleteTask(todo)">
         <mat-icon color="primary">delete_forever</mat-icon>
       </button>
       <mat-divider></mat-divider>
     </mat-list-item>
   </mat-list>
-  
-  <!-- Добавить задачу -->
-  <div class="add-btn">
-    <button mat-fab color="primary" (click)="createTask()">
-      <mat-icon mat-list-icon>add</mat-icon>
-    </button>
+</ng-template>  
+
+<!-- Шаблон для случая, когда список пуст -->
+<ng-template #listIsEmpty>
+  <div class="empty-list">
+    <div class="empty-list__wrapper-logo">
+      <img src="./assets/img/empty-list.png" class="empty-list__logo" alt="TODO list is empty">
+    </div>
   </div>
+</ng-template>

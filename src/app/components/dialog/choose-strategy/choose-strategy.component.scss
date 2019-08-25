@@ -1,0 +1,30 @@
+@import "grid-breakpoints";
+
+.strategy {
+    display: flex;
+    flex-direction: column;
+
+     // > 576px 
+     @include sm {
+        flex-direction: row;
+        flex-grow: 1;
+        justify-content: space-between;
+    }
+}
+
+.mat-dialog-actions .mat-raised-button+.mat-raised-button {
+    margin-left: 0;
+    margin-top: 8px;
+
+    // > 576px 
+    @include sm {
+        margin-top: 0;
+        flex: 0.3;
+    }
+}
+.mat-dialog-actions .mat-raised-button {
+    // > 576px 
+    @include sm {
+        flex: 0.3;
+    }
+}

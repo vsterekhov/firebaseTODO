@@ -1,3 +1,32 @@
+@import "grid-breakpoints";
+
+:host {
+    height: inherit;
+}
+.empty-list {
+    display: flex;
+    height: inherit;
+    flex-direction: column;
+    justify-content: center;
+
+    &__wrapper-logo {
+        display: flex;
+        height: inherit;
+        align-items: center;
+        justify-content: center; 
+    }
+
+    &__logo {
+        width: 100%;
+
+         // > 576px 
+        @include sm {
+            width: auto;
+            height: 100%;
+        }
+    }
+
+}
 .complete {
     text-decoration: line-through;
     color: #D3D3D3;	
@@ -6,10 +35,10 @@
     width: 100%;
     padding-left: 16px;
 }
-.delete-button {
+.delete-task-button {
     margin-right: -16px;
 }
-.add-btn {
+.create-task-button {
     position: fixed;
     right: 20px;
     bottom: 20Px;
